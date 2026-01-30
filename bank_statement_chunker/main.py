@@ -20,7 +20,7 @@ def convert_to_toon(json_file, md_file):
         print(f"TOON conversion failed: {e}")
 
 if __name__ == "__main__":
-    file_path = r"C:\Users\prask\Downloads\Hari_SIngh.xlsx"
+    file_path = r"Hari_SIngh.xlsx"
     
     base_name = os.path.splitext(file_path)[0]
     json_file = f"{base_name}_chunks.json"
@@ -64,4 +64,5 @@ if __name__ == "__main__":
         
         print("=" * 80)
     else:
+
         print("No chunks extracted - file may be corrupted or unsupported format")
