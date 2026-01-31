@@ -9,6 +9,7 @@ A robust Python package for chunking bank statements from PDF, CSV, and Excel fi
 - **Structured output**: Formatted text chunks with metadata
 - **Fallback handling**: Graceful degradation for difficult files
 - **Transaction validation**: Smart detection of bank transaction rows
+- **Service class**: Enterprise-ready service layer with caching and batch processing
 
 ## Installation
 
@@ -27,7 +28,7 @@ docker run -v /path/to/your/files:/app/data bank-statement-chunker
 
 ## Usage
 
-### Basic Usage
+### Basic Library Usage
 ```python
 from bank_statement_chunker.chunker import UniversalBankStatementChunker
 
@@ -43,10 +44,40 @@ metadata = result['metadata']
 fallback_used = result['fallback_used']
 ```
 
+### Service Class Usage (Recommended)
+```python
+from bank_statement_chunker.service import BankStatementService
+
+# Initialize service
+service = BankStatementService(chunk_size=5, overlap=0)
+
+# Process file with service features
+result = service.process_file("path/to/statement.pdf")
+
+# Get only chunks
+chunks = service.get_chunks_only("path/to/statement.pdf")
+
+# Get only metadata
+metadata = service.get_metadata("path/to/statement.pdf")
+
+# Batch processing
+files = ["file1.pdf", "file2.csv", "file3.xlsx"]
+results = service.batch_process(files)
+
+# Cache management
+service.clear_cache()
+cache_info = service.get_cache_info()
+```
+
 ### Command Line
 ```bash
 cd bank_statement_chunker
+
+# Run original chunker
 python main.py
+
+# Run service demonstration
+python main_service.py
 ```
 
 ## Output Formats
@@ -87,7 +118,7 @@ Address: HDFC BANK LTD, SECTOR 17-C, CHANDIGARH...
 
 ## API Reference
 
-### UniversalBankStatementChunker
+### UniversalBankStatementChunker (Library)
 
 ```python
 class UniversalBankStatementChunker:
@@ -116,18 +147,69 @@ class UniversalBankStatementChunker:
         """
 ```
 
+### BankStatementService (Service Class)
+
+```python
+class BankStatementService:
+    def __init__(self, chunk_size: int = 5, overlap: int = 0, log_level: int = logging.INFO):
+        """
+        Initialize the bank statement service.
+        
+        Args:
+            chunk_size: Number of transactions per chunk
+            overlap: Number of overlapping transactions between chunks
+            log_level: Logging level
+        """
+    
+    def process_file(self, file_path: str, use_cache: bool = True) -> Dict[str, Any]:
+        """
+        Process a bank statement file and return chunks with service metadata.
+        
+        Args:
+            file_path: Path to the bank statement file
+            use_cache: Whether to use cached results if available
+            
+        Returns:
+            Dict containing:
+                'chunks': List[str] - List of chunk strings
+                'metadata': Dict[str, str] - Account metadata
+                'fallback_used': bool - Whether fallback mode was used
+                'file_info': Dict[str, Any] - File processing info
+        """
+    
+    def get_chunks_only(self, file_path: str, use_cache: bool = True) -> List[str]:
+        """Get only the chunks from a bank statement file."""
+    
+    def get_metadata(self, file_path: str, use_cache: bool = True) -> Dict[str, str]:
+        """Get only the metadata from a bank statement file."""
+    
+    def is_fallback_used(self, file_path: str, use_cache: bool = True) -> bool:
+        """Check if fallback mode was used for a file."""
+    
+    def clear_cache(self, file_path: Optional[str] = None):
+        """Clear the processing cache."""
+    
+    def get_cache_info(self) -> Dict[str, Any]:
+        """Get information about the current cache."""
+    
+    def batch_process(self, file_paths: List[str], use_cache: bool = True) -> List[Dict[str, Any]]:
+        """Process multiple bank statement files."""
+```
+
 ## File Structure
 
 ```
 bank_statement_chunker/
 ├── __init__.py
 ├── chunker.py          # Main chunker class
+├── service.py          # Service class wrapper
 ├── csv_processor.py    # CSV/Excel processing
 ├── pdf_processor.py    # PDF processing
 ├── column_handler.py   # Column normalization
 ├── row_handler.py      # Row validation
 ├── config.py          # Configuration settings
-├── main.py            # Command line interface
+├── main.py            # Original command line interface
+├── main_service.py    # Service demonstration interface
 ├── requirements.txt   # Python dependencies
 ├── Dockerfile         # Docker configuration
 └── README.md         # This file
@@ -194,6 +276,5 @@ chunker = UniversalBankStatementChunker(
     log_level=logging.DEBUG
 )
 ```
-
 
 
